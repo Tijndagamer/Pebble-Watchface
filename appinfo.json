@@ -1,0 +1,26 @@
+{
+  "uuid": "13199b03-663d-4200-874c-0d597905bdf2",
+  "shortName": "Sovjet Watchface",
+  "longName": "Sovjet Watchface",
+  "companyName": "MrTijn",
+  "versionLabel": "1.0",
+  "sdkVersion": "3",
+  "targetPlatforms": ["basalt", "chalk"],
+  "enableMultiJS": true,
+  "capabilities": ["health"],
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+        {
+            "type": "bitmap",
+            "name": "IMAGE_BACKGROUND",
+            "file": "images/background.png"
+        }
+    ]
+  }
+}
