@@ -2,10 +2,13 @@
 
 static Window *s_main_window;
 static TextLayer *s_time_layer;
+static TextLayer *s_date_layer;
 static TextLayer *s_battery_info_layer;
 static TextLayer *s_step_count_layer;
 static BitmapLayer *s_background_layer;
 static GBitmap *s_background_bitmap;
+
+/* Health related */
 
 static void update_step_counter() {
     HealthMetric metric = HealthMetricStepCount;
@@ -28,6 +31,8 @@ static void update_step_counter() {
         APP_LOG(APP_LOG_LEVEL_ERROR, "Data unavailable!");
     }
 }
+
+/* Battery related */
 
 static void health_handler(HealthEventType event, void *context) {
     switch (event) {
@@ -54,6 +59,8 @@ static void battery_state_handler(BatteryChargeState charge) {
     text_layer_set_text(s_battery_info_layer, charge_percent_char);
 }
 
+/* Time */
+
 static void update_time() {
     // Get a tm struct
     time_t temp = time(NULL);
@@ -62,17 +69,23 @@ static void update_time() {
     struct tm *tick_time = localtime(&temp);
 
     // Write current hours and minutes into a buffer
-    static char s_buffer[8];
+    static char s_time_buffer[8];
     // Format the time. Fuck 12-hour format.
-    strftime(s_buffer, sizeof(s_buffer), "%H:%M", tick_time);
+    strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", tick_time);
+
+    static char s_date_buffer[12];
+    strftime(s_date_buffer, sizeof(s_date_buffer), "%Y-%m-%d", tick_time);
 
     // Display the text in the TextLayer
-    text_layer_set_text(s_time_layer, s_buffer);
+    text_layer_set_text(s_time_layer, s_time_buffer);
+    text_layer_set_text(s_date_layer, s_date_buffer);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     update_time();
 }
+
+/* Window */
 
 static void main_window_load(Window *window) {
     // Get information about the window needed for drawing text 'n shit
@@ -95,7 +108,7 @@ static void main_window_load(Window *window) {
 
     // Create TextLayer
     s_time_layer = text_layer_create(
-        GRect(0, PBL_IF_ROUND_ELSE(58, 54), bounds.size.w, 55));
+        GRect(0, 53, bounds.size.w, 50));
 
     // Set layout options
     text_layer_set_background_color(s_time_layer, GColorRed);
@@ -105,6 +118,20 @@ static void main_window_load(Window *window) {
 
     // Add child
     layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
+
+    /* Text layer for displaying the current date */
+
+    // Create TextLayer
+    s_date_layer = text_layer_create(GRect(-10, 105, bounds.size.w, 20));
+
+    // Set layout options
+    text_layer_set_background_color(s_date_layer, GColorRed);
+    text_layer_set_text_color(s_date_layer, GColorYellow);
+    text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_LECO_20_BOLD_NUMBERS));
+    text_layer_set_text_alignment(s_date_layer, GTextAlignmentRight);
+
+    // Add child
+    layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
 
     /* Text Layer for displaying battery info */
 
@@ -149,6 +176,8 @@ static void main_window_unload(Window *window) {
     gbitmap_destroy(s_background_bitmap);
     bitmap_layer_destroy(s_background_layer);
 }
+
+/* Base functions */
 
 static void init() {
     // Create a new window and assign to pointer
